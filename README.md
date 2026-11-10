@@ -50,6 +50,10 @@ build's own format (.dmg / .zip; anything else gets zipped).
 ## One-time setup
 
 **Supabase** (project `ybycshbxsjbajyczouup`)
+
+Quickest: run `bash scripts/setup-supabase.sh` — it asks for a Supabase access token and your Resend
+API key (never saved), then does steps 1–5 below via the Management API.
+
 1. Paste the anon/publishable key into `site/js/config.js` → `supabaseAnonKey`.
 2. Authentication → Email Templates → **Magic Link**: paste `supabase/email-templates/magic-link.html`
    and set the subject to `Your Blossom Rally code: {{ .Token }}`. The `{{ .Token }}` placeholder is what
