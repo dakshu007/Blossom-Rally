@@ -29,6 +29,19 @@
     return sb;
   }
 
+  // Fire-and-forget copy of every email to Google Sheets (never blocks the flow).
+  function toSheet(event, email, extra) {
+    if (!cfg.sheetsWebhook || !email) return;
+    const body = JSON.stringify(Object.assign({
+      event, email,
+      lang: navigator.language || "",
+      device: /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? "mobile" : (window.BR_PLATFORM || "desktop"),
+    }, extra || {}));
+    try {
+      fetch(cfg.sheetsWebhook, { method: "POST", mode: "no-cors", keepalive: true, headers: { "Content-Type": "text/plain;charset=utf-8" }, body });
+    } catch (e) {}
+  }
+
   let platform = "windows", email = "", timers = [], raf = 0, carRaf = 0, open = false, resendT = 0, resendIv = 0, lastFocus = null;
   const later = (fn, ms) => { const t = setTimeout(fn, ms); timers.push(t); return t; };
   const clearTimers = () => { timers.forEach(clearTimeout); timers = []; cancelAnimationFrame(raf); cancelAnimationFrame(carRaf); };
@@ -217,6 +230,7 @@
     const c = client();
     if (!c) { el.emailErr.textContent = "Downloads are being switched on right now — please check back shortly."; shake(); return; }
     el.emailErr.textContent = "";
+    toSheet("submitted", v);
     busy(el.emailBtn, true);
     try {
       const { error } = await c.auth.signInWithOtp({ email: v, options: { shouldCreateUser: true } });
@@ -303,6 +317,7 @@
       const { data, error } = await c.auth.verifyOtp({ email, token, type: "email" });
       if (error || !data || !data.session) throw error || new Error("invalid code");
       el.otp.classList.add("is-good");
+      toSheet("verified", email);
       clearInterval(resendIv);
       later(() => { showStep("done"); celebrate(); startDownload(); }, 350);
     } catch (err) {
@@ -364,6 +379,7 @@
         return;
       }
       // Navigating to an attachment URL downloads in place — the page stays put.
+      toSheet("downloaded", session.user.email, { platform });
       window.location.assign(url);
       el.doneMsg.innerHTML = `Your <b>${PNAME[platform]}</b> download has started. Check your downloads folder.`;
       S().play("rev", { volume: 0.6, delay: 0.3 });

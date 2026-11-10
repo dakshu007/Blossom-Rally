@@ -75,3 +75,9 @@ cd site && python3 -m http.server 8080
 ```
 
 The download step needs the Netlify function, so use `netlify dev` from the repo root to test it end to end.
+
+## Google Sheets email log
+
+Every email is copied to a Google Sheet the moment it's submitted (then updated on verify / download).
+Setup: `google-sheets/Code.gs` has the Apps Script and steps. Paste the web app URL into
+`site/js/config.js` → `sheetsWebhook`, then redeploy.
