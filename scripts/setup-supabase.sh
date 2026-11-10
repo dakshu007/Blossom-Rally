@@ -21,13 +21,22 @@ echo "🌸 Blossom Rally — Supabase setup for project $REF"
 echo
 echo "Supabase access token: https://supabase.com/dashboard/account/tokens  (Generate new token)"
 read -rsp "  Paste Supabase access token: " SB_TOKEN; echo
-read -rsp "  Paste Resend API key (re_...): " RESEND_KEY; echo
-echo "Sender address must be on a domain verified in Resend (resend.com/domains)."
-read -rp  "  Sender email (e.g. racers@yourdomain.com): " SENDER
+SMTP_HOST="${SMTP_HOST:-smtp.resend.com}"
+SMTP_PORT="${SMTP_PORT:-465}"
+SMTP_USER="${SMTP_USER:-resend}"
+if [ "$SMTP_HOST" = "smtp.resend.com" ]; then
+  read -rsp "  Paste Resend API key (re_...): " RESEND_KEY; echo
+  echo "Sender address must be on a domain verified in Resend (resend.com/domains)."
+  read -rp  "  Sender email (e.g. racers@yourdomain.com): " SENDER
+else
+  echo "Using SMTP $SMTP_HOST:$SMTP_PORT as $SMTP_USER"
+  read -rsp "  Paste SMTP password (Gmail: 16-character app password): " RESEND_KEY; echo
+  SENDER="${SENDER:-$SMTP_USER}"
+fi
 read -rp  "  Sender name [Blossom Rally]: " SENDER_NAME
 SENDER_NAME="${SENDER_NAME:-Blossom Rally}"
 
-export SB_TOKEN RESEND_KEY SENDER SENDER_NAME REF
+export SB_TOKEN RESEND_KEY SENDER SENDER_NAME REF SMTP_HOST SMTP_PORT SMTP_USER
 python3 - <<'PY'
 import glob, json, os, re, sys, urllib.request, urllib.error
 
@@ -49,12 +58,12 @@ def call(method, path, body=None):
 template = open("supabase/email-templates/magic-link.html", encoding="utf-8").read()
 subject = "Your Blossom Rally code: {{ .Token }}"
 
-print("\n1/3  Email: Resend SMTP + 6-digit code template …")
+print(f"\n1/3  Email: {os.environ['SMTP_HOST']} + 6-digit code template …")
 call("PATCH", "/config/auth", {
     "external_email_enabled": True,
-    "smtp_host": "smtp.resend.com",
-    "smtp_port": "465",
-    "smtp_user": "resend",
+    "smtp_host": os.environ["SMTP_HOST"],
+    "smtp_port": os.environ["SMTP_PORT"],
+    "smtp_user": os.environ["SMTP_USER"],
     "smtp_pass": os.environ["RESEND_KEY"],
     "smtp_admin_email": os.environ["SENDER"],
     "smtp_sender_name": os.environ["SENDER_NAME"],
