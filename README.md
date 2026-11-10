@@ -33,12 +33,13 @@ supabase/
 3. Code verified (`verifyOtp`) → session saved in the browser, so returning racers skip the code.
 4. Page calls `/api/download?platform=mac|windows` with the session token. The function checks it
    with Supabase, logs the download, and returns the GitHub Release asset URL.
-5. The browser downloads the zip directly from GitHub. No Google Drive page is ever shown.
+5. The browser downloads the build (.dmg / .zip) directly from GitHub. No Google Drive page is ever shown.
 
 ## Shipping a new build (every Thursday)
 
 The **Sync game builds** workflow runs every Thursday and copies the current Google Drive files into
-the `latest-build` release as `BlossomRally-macOS.zip` and `BlossomRally-Windows.zip`.
+the `latest-build` release as `BlossomRally-macOS.<ext>` and `BlossomRally-Windows.<ext>`, keeping each
+build's own format (.dmg / .zip; anything else gets zipped).
 
 - Easiest: in Google Drive, right-click the file → **Manage versions → Upload new version** (keeps the
   same link), then wait for Thursday or run the workflow from the **Actions** tab.

@@ -73,21 +73,22 @@ jobs:
           set -euo pipefail
           mkdir -p out
           pack () {
-            local src="dl/$1" out="out/$2"
+            local src="dl/$1" base="$2"
             local f; f="$(ls -1 "$src" | head -n1)"
             if [ -z "$f" ]; then echo "::error::No file downloaded for $1"; exit 1; fi
             if file --mime-type -b "$src/$f" | grep -qi html; then echo "::error::Google returned an HTML page for $1 — check the file is shared as 'Anyone with the link'"; exit 1; fi
-            if [[ "${f,,}" == *.zip ]]; then
-              cp "$src/$f" "$out"
-            else
-              ( cd "$src" && zip -qry "../../$out" "$f" )
-            fi
-            unzip -tq "$out"
+            local ext="${f##*.}"; ext="${ext,,}"
+            case "$ext" in
+              zip) cp "$src/$f" "out/$base.zip"; unzip -tq "out/$base.zip"; out="out/$base.zip" ;;
+              dmg|pkg|exe|msi) cp "$src/$f" "out/$base.$ext"; out="out/$base.$ext" ;;
+              *) ( cd "$src" && zip -qry "../../out/$base.zip" "$f" ); out="out/$base.zip" ;;
+            esac
             echo "$1 → $out ($(du -h "$out" | cut -f1)) from '$f'"
+            echo "$f" >> out/SOURCES.txt
           }
-          pack mac BlossomRally-macOS.zip
-          pack windows BlossomRally-Windows.zip
-          ( cd out && sha256sum *.zip > SHA256SUMS.txt && cat SHA256SUMS.txt )
+          pack mac BlossomRally-macOS
+          pack windows BlossomRally-Windows
+          ( cd out && sha256sum BlossomRally-* > SHA256SUMS.txt && cat SHA256SUMS.txt )
 
       - name: Publish to GitHub Release
         env:
@@ -95,7 +96,7 @@ jobs:
           GH_REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
-          NOTES="Latest Blossom Rally testing build for macOS and Windows.
+          NOTES="Latest Blossom Rally testing build for macOS and Windows ($(paste -sd ', ' out/SOURCES.txt)).
           Synced from Google Drive on $(date -u '+%Y-%m-%d %H:%M UTC'). New build every Thursday.
           Download from the website — https://blossomrally.netlify.app"
           if ! gh release view "$TAG" >/dev/null 2>&1; then
@@ -103,5 +104,9 @@ jobs:
           else
             gh release edit "$TAG" --notes "$NOTES"
           fi
-          gh release upload "$TAG" out/BlossomRally-macOS.zip out/BlossomRally-Windows.zip out/SHA256SUMS.txt --clobber
+          # remove stale assets whose format changed (e.g. .zip → .dmg)
+          for old in $(gh release view "$TAG" --json assets -q '.assets[].name'); do
+            [ -f "out/$old" ] || gh release delete-asset "$TAG" "$old" -y
+          done
+          gh release upload "$TAG" out/BlossomRally-* out/SHA256SUMS.txt --clobber
           gh release view "$TAG"

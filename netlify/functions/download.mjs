@@ -7,7 +7,11 @@ const env = (k) => (globalThis.Netlify && Netlify.env.get(k)) || process.env[k] 
 const SUPABASE_URL = env("SUPABASE_URL") || "https://ybycshbxsjbajyczouup.supabase.co";
 const REPO = env("BUILDS_REPO") || "dakshu007/blossom-rally";
 const TAG = env("BUILDS_TAG") || "latest-build";
-const FILES = { mac: "BlossomRally-macOS.zip", windows: "BlossomRally-Windows.zip" };
+// Each platform keeps its native format; the first one present in the release wins.
+const FILES = {
+  mac: ["BlossomRally-macOS.dmg", "BlossomRally-macOS.zip", "BlossomRally-macOS.pkg"],
+  windows: ["BlossomRally-Windows.zip", "BlossomRally-Windows.exe", "BlossomRally-Windows.msi"],
+};
 
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -33,9 +37,13 @@ export default async (req) => {
     return json({ error: "unverified" }, 403);
   }
 
-  const asset = `https://github.com/${REPO}/releases/download/${TAG}/${FILES[platform]}`;
-  const head = await fetch(asset, { method: "HEAD", redirect: "manual" }).catch(() => null);
-  if (!head || head.status === 404) return json({ error: "build_not_ready" }, 503);
+  let asset = null;
+  for (const name of FILES[platform]) {
+    const candidate = `https://github.com/${REPO}/releases/download/${TAG}/${name}`;
+    const head = await fetch(candidate, { method: "HEAD", redirect: "manual" }).catch(() => null);
+    if (head && head.status >= 300 && head.status < 400) { asset = candidate; break; }
+  }
+  if (!asset) return json({ error: "build_not_ready" }, 503);
 
   // Best-effort download log (table from supabase/migrations). Never blocks the download.
   try {
