@@ -318,6 +318,29 @@
     const r = el.panel.getBoundingClientRect();
     petalBurst(r.left + r.width / 2, r.top + 40, 60, 1.1);
   }
+  // Resolve the latest build straight from the GitHub Release (used when the Netlify
+  // function isn't deployed, e.g. a drag-and-drop deploy).
+  const GH_RELEASE = "https://api.github.com/repos/dakshu007/blossom-rally/releases/tags/latest-build";
+  const ASSET_PREFIX = { mac: "BlossomRally-macOS.", windows: "BlossomRally-Windows." };
+  async function fromGitHub(p) {
+    const r = await fetch(GH_RELEASE, { headers: { Accept: "application/vnd.github+json" } });
+    if (!r.ok) return null;
+    const rel = await r.json();
+    const a = (rel.assets || []).find((x) => x.name.startsWith(ASSET_PREFIX[p]));
+    return a ? a.browser_download_url : null;
+  }
+  async function viaFunction(session) {
+    try {
+      const res = await fetch(`${cfg.downloadEndpoint}?platform=${platform}`, {
+        headers: { Authorization: `Bearer ${session.access_token}`, apikey: cfg.supabaseAnonKey },
+        cache: "no-store",
+      });
+      const type = res.headers.get("content-type") || "";
+      if (!type.includes("application/json")) return { missing: true }; // no function on this deploy
+      return { status: res.status, body: await res.json().catch(() => ({})) };
+    } catch (e) { return { missing: true }; }
+  }
+
   async function startDownload(p) {
     if (p) setPlatform(p);
     el.doneMsg.textContent = `Your ${PNAME[platform]} build is starting…`;
@@ -326,20 +349,22 @@
       const { data } = c ? await c.auth.getSession() : { data: null };
       const session = data && data.session;
       if (!session) { showStep("email"); return; }
-      const res = await fetch(`${cfg.downloadEndpoint}?platform=${platform}`, {
-        headers: { Authorization: `Bearer ${session.access_token}`, apikey: cfg.supabaseAnonKey },
-        cache: "no-store",
-      });
-      const body = await res.json().catch(() => ({}));
-      if (res.status === 401) { await c.auth.signOut().catch(() => {}); showStep("email"); el.emailErr.textContent = "Your session expired — verify your email again."; return; }
-      if (!res.ok || !body.url) {
-        el.doneMsg.textContent = body.error === "build_not_ready"
-          ? `The ${PNAME[platform]} build is being refuelled in the pits. Try again in a few minutes.`
-          : "Couldn't start the download. Tap the button to try again.";
+      let url = null;
+      const fn = await viaFunction(session);
+      if (fn.missing) {
+        url = await fromGitHub(platform);
+        // log the download ourselves (RLS: racers may insert their own row)
+        if (url) c.from("downloads").insert({ user_id: session.user.id, email: session.user.email, platform, user_agent: navigator.userAgent.slice(0, 300) }).then(() => {}, () => {});
+      } else {
+        if (fn.status === 401) { await c.auth.signOut().catch(() => {}); showStep("email"); el.emailErr.textContent = "Your session expired — verify your email again."; return; }
+        url = fn.body && fn.body.url;
+      }
+      if (!url) {
+        el.doneMsg.textContent = `The ${PNAME[platform]} build is being refuelled in the pits. Try again in a few minutes.`;
         return;
       }
       // Navigating to an attachment URL downloads in place — the page stays put.
-      window.location.assign(body.url);
+      window.location.assign(url);
       el.doneMsg.innerHTML = `Your <b>${PNAME[platform]}</b> download has started. Check your downloads folder.`;
       S().play("rev", { volume: 0.6, delay: 0.3 });
     } catch (err) {
