@@ -8,6 +8,10 @@ name: Sync game builds
 # same link) — or run this workflow manually with new Drive file IDs.
 
 on:
+  # Also runs whenever this workflow file itself is pushed (first sync happens automatically).
+  push:
+    paths:
+      - ".github/workflows/sync-builds.yml"
   workflow_dispatch:
     inputs:
       mac_drive_id:
