@@ -371,7 +371,7 @@
       car.x = WW / 2 + Math.cos(t / 1000) * (WW * 0.18); car.y = WH * 0.55 + Math.sin(t / 1000) * (WH * 0.18);
       car.a = t / 1000 + Math.PI / 2 + 0.5;
       const nfx = Math.cos(car.a), nfy = Math.sin(car.a);
-      [[-14, -10], [-14, 10]].forEach(([wx, wy], i) => {
+      [[-16 * CS, -12 * CS], [-16 * CS, 12 * CS]].forEach(([wx, wy], i) => {
         const x = car.x + nfx * wx - nfy * wy, y = car.y + nfy * wx + nfx * wy;
         const lp = lastWheel[i]; sk.strokeStyle = "rgba(30,22,24,.12)"; sk.lineWidth = 5;
         if (lp) { sk.beginPath(); sk.moveTo(lp[0], lp[1]); sk.lineTo(x, y); sk.stroke(); }
