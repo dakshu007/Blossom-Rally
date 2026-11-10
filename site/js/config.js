@@ -7,5 +7,5 @@ window.BR_CONFIG = {
   otpLength: 6,
   downloadEndpoint: "/api/download",
   // Google Apps Script web app URL (…/exec) — see google-sheets/Code.gs
-  sheetsWebhook: "",
+  sheetsWebhook: "https://script.google.com/macros/s/AKfycbwUkEI0fXDD5-GI49EGJNOryRycuyZPHDg3q8qadWEON1KmYKiZouxU4MD9PKHqhqg/exec",
 };
