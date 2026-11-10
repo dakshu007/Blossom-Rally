@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Blossom Rally — Drift through the sakura</title>
+  <meta name="description" content="Blossom Rally is a low-poly drift rally game set in a cherry-blossom valley. Free testing build for macOS and Windows — new update every Thursday." />
+  <meta name="theme-color" content="#1b1416" />
+  <meta property="og:title" content="Blossom Rally — Drift through the sakura" />
+  <meta property="og:description" content="Low-poly drift rally through pagoda towns and cherry-blossom valleys. Free testing build for macOS & Windows. New update every Thursday." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="/assets/img/hero-poster.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Chakra+Petch:wght@500;600;700&family=Dela+Gothic+One&display=swap" rel="stylesheet" />
+  <link rel="preload" as="image" href="/assets/img/hero-poster.jpg" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body class="is-loading">
+
+  <!-- ============ IGNITION GATE ============ -->
+  <div class="gate" id="gate" role="dialog" aria-modal="true" aria-label="Enter Blossom Rally">
+    <div class="gate__inner">
+      <div class="gate__jp" aria-hidden="true">桜ラリー</div>
+      <div class="tach tach--gate" aria-hidden="true">
+        <svg viewBox="0 0 200 120">
+          <path class="tach__arc" d="M20 110 A80 80 0 0 1 180 110" />
+          <path class="tach__red" d="M151 47 A80 80 0 0 1 180 110" />
+          <g class="tach__ticks"></g>
+          <line class="tach__needle" id="gateNeedle" x1="100" y1="110" x2="100" y2="40" />
+          <circle cx="100" cy="110" r="7" class="tach__hub" />
+        </svg>
+        <div class="gate__load"><span id="gateLoad">0</span>%</div>
+      </div>
+      <h1 class="gate__title">BLOSSOM<br/>RALLY</h1>
+      <p class="gate__hint">Best with sound. Engines are loud.</p>
+      <div class="gate__btns">
+        <button class="btn btn--ignite" id="enterSound" disabled>
+          <span class="btn__key">●</span> Start engine
+        </button>
+        <button class="btn btn--ghost" id="enterSilent" disabled>Enter silent</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ NAV ============ -->
+  <header class="nav" id="nav">
+    <a href="#top" class="nav__logo" aria-label="Blossom Rally home">
+      <svg class="nav__emblem" viewBox="0 0 40 40" aria-hidden="true"><use href="#sakura" /></svg>
+      <span>BLOSSOM<b>RALLY</b></span>
+    </a>
+    <nav class="nav__links" aria-label="Sections">
+      <a href="#run">The Run</a>
+      <a href="#garage">Garage</a>
+      <a href="#drive">Test Drive</a>
+      <a href="#gallery">Photo Mode</a>
+      <a href="#thursday">Updates</a>
+    </nav>
+    <div class="nav__right">
+      <button class="sound" id="soundToggle" aria-pressed="false" aria-label="Toggle sound">
+        <span class="sound__bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        <span class="sound__label">SOUND OFF</span>
+      </button>
+      <button class="btn btn--sm btn--red" data-download>Download</button>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- ============ HERO ============ -->
+    <section class="hero" id="hero">
+      <div class="hero__media">
+        <video class="hero__video" id="heroVideo" autoplay muted loop playsinline preload="auto" poster="/assets/img/hero-poster.jpg">
+          <source src="/assets/video/hero.webm" type="video/webm" />
+          <source src="/assets/video/hero.mp4" type="video/mp4" />
+        </video>
+        <div class="hero__shade"></div>
+      </div>
+      <canvas class="petals" id="petals" aria-hidden="true"></canvas>
+
+      <div class="hero__jp" aria-hidden="true">桜<br/>ラ<br/>リ<br/>ー</div>
+
+      <div class="hero__content">
+        <div class="hero__badges">
+          <span class="chip chip--live"><i></i> Testing build live</span>
+          <span class="chip">macOS · Windows</span>
+          <span class="chip chip--pink">New update every Thursday</span>
+        </div>
+        <h1 class="hero__title" aria-label="Blossom Rally">
+          <span class="hero__line"><span data-split>BLOSSOM</span></span>
+          <span class="hero__line hero__line--2"><span data-split>RALLY</span><span class="hero__num">27</span></span>
+        </h1>
+        <div class="livery" aria-hidden="true"><i></i><i></i><i></i></div>
+        <p class="hero__sub">Throw a little white rally car sideways through pagoda towns, lantern streets and a valley that never stops blooming.</p>
+        <div class="hero__ctas">
+          <button class="btn btn--red btn--lg" data-download>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 19h16" /></svg>
+            Download free
+          </button>
+          <a class="btn btn--glass btn--lg" href="#drive">Try the drift lot</a>
+        </div>
+      </div>
+
+      <div class="hero__hud" aria-hidden="true">
+        <div class="hud__left">Score <b id="hudScore">0</b> &nbsp; Best drift <b id="hudBest">0</b></div>
+        <div class="hud__right"><b id="hudSpeed">0</b> km/h<small>Brenner S1 · gear <span id="hudGear">1</span></small></div>
+      </div>
+      <a href="#run" class="hero__scroll" aria-label="Scroll down"><span>Scroll to drift</span><i></i></a>
+    </section>
+
+    <!-- ============ MARQUEE ============ -->
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee__track" id="marquee">
+        <span>DRIFT</span><em>桜</em><span>HAIRPINS</span><em>✿</em><span>PAGODA TOWN</span><em>提灯</em><span>LANTERN STREET</span><em>✿</em><span>SAKURA VALLEY</span><em>桜</em><span>EVERY THURSDAY</span><em>✿</em>
+      </div>
+    </div>
+
+    <!-- ============ THE RUN (scroll-driven drift road) ============ -->
+    <section class="run" id="run">
+      <div class="run__sticky">
+        <div class="run__head">
+          <p class="eyebrow">Stage 01 — The Run</p>
+          <h2 class="h2">Scroll is your<br/>throttle.</h2>
+        </div>
+        <svg class="run__svg" id="runSvg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+          <defs>
+            <pattern id="dash" width="40" height="8" patternUnits="userSpaceOnUse"><rect width="22" height="8" fill="#fff" /></pattern>
+          </defs>
+          <g id="runTrees"></g>
+          <path id="runRoadEdge" class="run__road-edge" d="" />
+          <path id="runRoad" class="run__road" d="" />
+          <path id="runSkid" class="run__skid" d="" />
+          <path id="runSkid2" class="run__skid" d="" />
+          <path id="runCenter" class="run__center" d="" />
+          <g id="runFlags"></g>
+          <g id="runCar" class="run__car">
+            <g id="runCarBody" transform="rotate(0)">
+              <rect x="-26" y="-13" width="52" height="26" rx="7" fill="#fbf8f2" stroke="#1b1416" stroke-width="2.5" />
+              <rect x="-26" y="-3.5" width="52" height="3" fill="#2f7f8f" />
+              <rect x="-26" y="0" width="52" height="3" fill="#f0892b" />
+              <rect x="-6" y="-10" width="16" height="20" rx="3" fill="#2b2326" opacity=".85" />
+              <circle cx="-14" cy="0" r="5.5" fill="#fbf8f2" stroke="#1b1416" stroke-width="1.5" />
+              <text x="-14" y="2.3" text-anchor="middle" font-size="6.5" font-weight="900" fill="#1b1416" font-family="Archivo">27</text>
+              <rect x="20" y="-11" width="4" height="5" rx="1" fill="#ffe9a8" />
+              <rect x="20" y="6" width="4" height="5" rx="1" fill="#ffe9a8" />
+            </g>
+          </g>
+        </svg>
+        <div class="run__cards" id="runCards">
+          <article class="rcard" data-at="0.08">
+            <img src="/assets/img/temple-road.jpg" alt="The white Brenner S1 rally car on the stone temple road between red pagodas" loading="lazy" />
+            <div><span class="rcard__n">01</span><h3>Pagoda town</h3><p>Stone streets, red lacquer roofs and lanterns swinging overhead. Tight, technical, unforgiving.</p></div>
+          </article>
+          <article class="rcard" data-at="0.32">
+            <img src="/assets/img/sakura-bend.jpg" alt="Rally car rounding an asphalt bend under a giant cherry-blossom tree" loading="lazy" />
+            <div><span class="rcard__n">02</span><h3>Sakura valley</h3><p>Open asphalt that ribbons through grass and petal storms. Hold the throttle, hold the angle.</p></div>
+          </article>
+          <article class="rcard" data-at="0.56">
+            <img src="/assets/img/drift-smoke.jpg" alt="Rally car sliding sideways with tyre smoke on a sakura-lined road" loading="lazy" />
+            <div><span class="rcard__n">03</span><h3>Drift scoring</h3><p>Angle × speed × time. Chain slides into combos and chase your best drift every run.</p></div>
+          </article>
+          <article class="rcard" data-at="0.8">
+            <img src="/assets/img/night-lights.jpg" alt="Front of the rally car with its four spotlights glowing" loading="lazy" />
+            <div><span class="rcard__n">04</span><h3>Spotlights on</h3><p>Four light-pod rally lamps, rally livery, gear-by-gear HUD. Built to look good going sideways.</p></div>
+          </article>
+        </div>
+        <div class="run__meter" aria-hidden="true"><span id="runPct">0</span>% <small>stage complete</small></div>
+      </div>
+    </section>
+
+    <!-- ============ GARAGE ============ -->
+    <section class="garage" id="garage">
+      <div class="garage__grid">
+        <div class="garage__stage">
+          <div class="garage__disc" aria-hidden="true"></div>
+          <img class="garage__img" src="/assets/img/brenner-s1.jpg" alt="Side view of the Brenner S1: white rally car with teal and orange stripes, number 27 and bronze wheels" loading="lazy" />
+          <div class="garage__tag">#27</div>
+        </div>
+        <div class="garage__info">
+          <p class="eyebrow">Garage</p>
+          <h2 class="h2">Brenner S1</h2>
+          <p class="lead">A boxy 80s-style rally homologation special. Teal-and-orange livery, bronze wheels, four spotlights and a rear wing that means business.</p>
+          <ul class="stats" id="stats">
+            <li><span>Power</span><i style="--v:.78"></i></li>
+            <li><span>Top speed</span><i style="--v:.7"></i></li>
+            <li><span>Grip</span><i style="--v:.55"></i></li>
+            <li><span>Drift</span><i style="--v:.92"></i></li>
+          </ul>
+          <div class="rev">
+            <div class="tach tach--rev" aria-hidden="true">
+              <svg viewBox="0 0 200 120">
+                <path class="tach__arc" d="M20 110 A80 80 0 0 1 180 110" />
+                <path class="tach__red" d="M151 47 A80 80 0 0 1 180 110" />
+                <g class="tach__ticks"></g>
+                <line class="tach__needle" id="revNeedle" x1="100" y1="110" x2="100" y2="40" />
+                <circle cx="100" cy="110" r="7" class="tach__hub" />
+              </svg>
+              <div class="tach__rpm"><b id="revRpm">900</b><small>rpm</small></div>
+            </div>
+            <button class="btn btn--ink rev__btn" id="revBtn">
+              <span>Hold to rev</span><small>or hold <kbd>R</kbd></small>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ DRIFT LOT (mini game) ============ -->
+    <section class="lot" id="drive">
+      <div class="lot__head">
+        <div>
+          <p class="eyebrow eyebrow--light">Test Drive</p>
+          <h2 class="h2 h2--light">The drift lot.</h2>
+          <p class="lead lead--light">A tiny taste, right here in your browser. Get sideways, chain the combo, don't kiss the trees.</p>
+        </div>
+        <div class="lot__keys" aria-label="Controls">
+          <span><kbd>W</kbd><kbd>↑</kbd> gas</span>
+          <span><kbd>S</kbd><kbd>↓</kbd> brake</span>
+          <span><kbd>A</kbd><kbd>D</kbd> steer</span>
+          <span><kbd>Space</kbd> handbrake</span>
+        </div>
+      </div>
+      <div class="lot__frame" id="lotFrame">
+        <canvas id="lot" aria-label="Drift mini-game. Use arrow keys or WASD to drive and space for handbrake."></canvas>
+        <div class="lot__hud">
+          <div><small>SPEED</small><b id="lotSpeed">0</b><small>km/h</small></div>
+          <div class="lot__combo" id="lotComboBox"><small>DRIFT</small><b id="lotDrift">0</b><small id="lotCombo">x1</small></div>
+          <div><small>SCORE</small><b id="lotScore">0</b><small>BEST <span id="lotBest">0</span></small></div>
+        </div>
+        <div class="lot__pop" id="lotPop"></div>
+        <button class="lot__start" id="lotStart">
+          <span class="lot__start-k">CLICK TO DRIVE</span>
+          <span class="lot__start-s">Keyboard or touch controls</span>
+        </button>
+        <div class="lot__touch" id="lotTouch" aria-hidden="true">
+          <div class="lot__pad">
+            <button data-k="left">◀</button><button data-k="right">▶</button>
+          </div>
+          <div class="lot__pad">
+            <button data-k="hand">HB</button><button data-k="brake">BRK</button><button data-k="gas" class="is-gas">GAS</button>
+          </div>
+        </div>
+      </div>
+      <div class="lot__foot">
+        <p>Like that? The real thing has a whole valley, a pagoda town and a proper physics model.</p>
+        <button class="btn btn--red" data-download>Get the full game</button>
+      </div>
+    </section>
+
+    <!-- ============ GALLERY ============ -->
+    <section class="gallery" id="gallery">
+      <div class="gallery__head">
+        <p class="eyebrow">Photo Mode</p>
+        <h2 class="h2">Postcards from<br/>the valley.</h2>
+        <p class="gallery__hint">Drag or scroll sideways →</p>
+      </div>
+      <div class="gallery__track" id="galleryTrack" tabindex="0" aria-label="Gameplay screenshots">
+        <figure class="shot"><img src="/assets/img/sakura-bend.jpg" alt="Rally car at a bend under a cherry-blossom tree" loading="lazy" /><figcaption><b>01</b> Sakura bend</figcaption></figure>
+        <figure class="shot"><img src="/assets/img/garage.jpg" alt="The Brenner S1 on the red garage turntable with its stats panel" loading="lazy" /><figcaption><b>02</b> Garage turntable</figcaption></figure>
+        <figure class="shot"><img src="/assets/img/lantern-street.jpg" alt="Rally car driving past red pagodas and lantern posts" loading="lazy" /><figcaption><b>03</b> Lantern street</figcaption></figure>
+        <figure class="shot"><img src="/assets/img/hairpin.jpg" alt="Rally car on a winding road with lights on" loading="lazy" /><figcaption><b>04</b> Valley hairpin</figcaption></figure>
+        <figure class="shot"><img src="/assets/img/livery.jpg" alt="Close-up of the car door with the number 27" loading="lazy" /><figcaption><b>05</b> Number 27</figcaption></figure>
+        <figure class="shot"><img src="/assets/img/temple-road.jpg" alt="Rally car on the stone road leading to the pagodas" loading="lazy" /><figcaption><b>06</b> Temple road</figcaption></figure>
+        <figure class="shot"><img src="/assets/img/drift-smoke.jpg" alt="Car drifting with tyre smoke" loading="lazy" /><figcaption><b>07</b> Full lock</figcaption></figure>
+        <figure class="shot"><img src="/assets/img/menu.jpg" alt="Blossom Rally main menu over the valley" loading="lazy" /><figcaption><b>08</b> Title screen</figcaption></figure>
+      </div>
+    </section>
+
+    <!-- ============ THURSDAY ============ -->
+    <section class="thursday" id="thursday">
+      <div class="thursday__grid">
+        <div>
+          <p class="eyebrow eyebrow--light">Pit board</p>
+          <h2 class="h2 h2--light">New build.<br/><span class="pink">Every Thursday.</span></h2>
+          <p class="lead lead--light">Blossom Rally is in open testing. Every Thursday a fresh build lands — new roads, tuning, fixes and surprises. Come back to this page and grab the latest with the same email.</p>
+        </div>
+        <div class="pit">
+          <div class="pit__label" id="pitLabel">NEXT UPDATE IN</div>
+          <div class="pit__clock" id="pitClock">
+            <div><b data-u="d">0</b><small>DAYS</small></div>
+            <div><b data-u="h">00</b><small>HRS</small></div>
+            <div><b data-u="m">00</b><small>MIN</small></div>
+            <div><b data-u="s">00</b><small>SEC</small></div>
+          </div>
+          <div class="pit__week" id="pitWeek" aria-hidden="true"></div>
+        </div>
+      </div>
+      <ol class="log">
+        <li class="log__item log__item--now">
+          <span class="log__tag">Now testing</span>
+          <h3>Testing build</h3>
+          <p>Brenner S1 · garage turntable · pagoda town · sakura valley roads · drift scoring & best drift · gear HUD.</p>
+        </li>
+        <li class="log__item log__item--next">
+          <span class="log__tag">Next Thursday</span>
+          <h3>??? <span class="lock">LOCKED</span></h3>
+          <p>Keep your engine warm. Notes drop with the build.</p>
+        </li>
+        <li class="log__item log__item--next">
+          <span class="log__tag">The Thursday after</span>
+          <h3>??? <span class="lock">LOCKED</span></h3>
+          <p>Every week, without fail.</p>
+        </li>
+      </ol>
+    </section>
+
+    <!-- ============ DOWNLOAD ============ -->
+    <section class="dl" id="download">
+      <div class="dl__bg" aria-hidden="true"></div>
+      <div class="dl__head">
+        <p class="eyebrow eyebrow--light">Grid slot open</p>
+        <h2 class="h2 h2--light dl__title">Take the wheel.</h2>
+        <p class="lead lead--light">Free testing build. Verify your email once, then you're on the grid.</p>
+      </div>
+      <div class="dl__cards">
+        <button class="plat" data-download="mac" id="platMac">
+          <span class="plat__rec">Recommended for you</span>
+          <svg class="plat__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16.37 12.6c-.02-2.3 1.88-3.4 1.96-3.46-1.07-1.56-2.73-1.78-3.32-1.8-1.41-.14-2.76.83-3.48.83-.72 0-1.82-.81-3-.79-1.54.02-2.96.9-3.76 2.27-1.6 2.78-.41 6.9 1.15 9.16.76 1.1 1.67 2.34 2.86 2.3 1.15-.05 1.58-.74 2.97-.74 1.38 0 1.77.74 2.98.72 1.23-.02 2.01-1.12 2.76-2.23.87-1.28 1.23-2.52 1.25-2.58-.03-.01-2.4-.92-2.42-3.66zM14.1 5.86c.63-.77 1.06-1.83.94-2.89-.91.04-2.01.61-2.66 1.37-.58.67-1.09 1.75-.96 2.79 1.02.08 2.05-.52 2.68-1.27z"/></svg>
+          <span class="plat__os">macOS</span>
+          <span class="plat__meta">Testing build · .zip</span>
+          <span class="plat__go">Download for Mac <i>→</i></span>
+        </button>
+        <button class="plat" data-download="windows" id="platWin">
+          <span class="plat__rec">Recommended for you</span>
+          <svg class="plat__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5.1l7.4-1v7.2H3V5.1zm0 13.8l7.4 1v-7.1H3v6.1zm8.2 1.1L21 21.4v-8.6h-9.8V20zm0-15.9v7.2H21V2.6l-9.8 1.5z"/></svg>
+          <span class="plat__os">Windows</span>
+          <span class="plat__meta">Testing build · .zip</span>
+          <span class="plat__go">Download for Windows <i>→</i></span>
+        </button>
+      </div>
+      <p class="dl__note" id="dlNote">Blossom Rally is a desktop game. On a phone? Verify now and grab it on your computer later.</p>
+    </section>
+
+    <!-- ============ FAQ ============ -->
+    <section class="faq" id="faq">
+      <h2 class="h2">Pit lane Q&amp;A</h2>
+      <div class="faq__list">
+        <details>
+          <summary>Is it free?</summary>
+          <p>Yes. The testing build is free to download and play.</p>
+        </details>
+        <details>
+          <summary>Why do you need my email?</summary>
+          <p>We send a one-time code to make sure a real racer is on the other end. It keeps the testing build out of random link-sharing and lets you come back for each Thursday build with the same email.</p>
+        </details>
+        <details>
+          <summary>macOS says the app “can’t be opened”</summary>
+          <p>It's a testing build that isn't notarized yet. Unzip it, then right-click (or Control-click) <b>Blossom Rally</b> and choose <b>Open</b>, then <b>Open</b> again. If it's still blocked, go to <b>System Settings → Privacy &amp; Security</b> and click <b>Open Anyway</b>.</p>
+        </details>
+        <details>
+          <summary>Windows shows “Windows protected your PC”</summary>
+          <p>That's SmartScreen being careful with a new, unsigned game. Click <b>More info → Run anyway</b>. Unzip the whole folder first — the game needs the files next to the .exe.</p>
+        </details>
+        <details>
+          <summary>When do updates come out?</summary>
+          <p>Every Thursday. Come back here, verify with the same email, and download the latest build.</p>
+        </details>
+        <details>
+          <summary>I didn't get the code</summary>
+          <p>Check spam and promotions. Codes expire after a while — hit <b>Resend</b> in the download window to get a fresh one.</p>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="foot__big" aria-hidden="true">BLOSSOM RALLY</div>
+    <div class="foot__row">
+      <span>© <span id="year">2026</span> Blossom Rally · Testing build</span>
+      <span class="foot__jp">桜の中を、横向きに。</span>
+      <a href="#top">Back to start ↑</a>
+    </div>
+  </footer>
+
+  <!-- ============ HUD (scroll speedo) ============ -->
+  <div class="speedo" id="speedo" aria-hidden="true">
+    <div class="speedo__v"><b id="spdV">0</b><small>km/h</small></div>
+    <div class="speedo__g">G<b id="spdG">1</b></div>
+    <div class="speedo__d">DRIFT <b id="spdD">0</b></div>
+  </div>
+
+  <!-- ============ LAUNCH / DOWNLOAD EXPERIENCE ============ -->
+  <div class="launch" id="launch" role="dialog" aria-modal="true" aria-labelledby="launchTitle" hidden>
+    <canvas class="launch__fx" id="launchFx" aria-hidden="true"></canvas>
+    <div class="launch__road" aria-hidden="true"></div>
+
+    <!-- stage: lights -->
+    <div class="launch__lights" id="launchLights" aria-hidden="true">
+      <div class="gantry">
+        <div class="gantry__pod"><i></i><i></i></div>
+        <div class="gantry__pod"><i></i><i></i></div>
+        <div class="gantry__pod"><i></i><i></i></div>
+        <div class="gantry__pod"><i></i><i></i></div>
+        <div class="gantry__pod"><i></i><i></i></div>
+      </div>
+      <div class="launch__go" id="launchGo">GO!</div>
+    </div>
+
+    <!-- stage: car drift -->
+    <div class="launch__car" id="launchCar" aria-hidden="true">
+      <svg viewBox="-40 -24 80 48"><use href="#carTop" x="-40" y="-24" width="80" height="48" /></svg>
+    </div>
+
+    <!-- panel -->
+    <div class="panel" id="panel">
+      <button class="panel__close" id="launchClose" aria-label="Close">✕</button>
+      <div class="panel__plat" id="panelPlat">
+        <button data-plat="mac">macOS</button>
+        <button data-plat="windows">Windows</button>
+      </div>
+
+      <!-- step email -->
+      <form class="step" id="stepEmail" novalidate>
+        <p class="step__k">Racer license · step 1 of 2</p>
+        <h3 class="step__t" id="launchTitle">Who's behind the wheel?</h3>
+        <p class="step__d">Enter your email. We'll send a one-time code to put you on the grid.</p>
+        <label class="field">
+          <span>Email</span>
+          <input type="email" id="emailInput" autocomplete="email" inputmode="email" placeholder="you@example.com" required />
+        </label>
+        <p class="step__err" id="emailErr" role="alert"></p>
+        <button class="btn btn--red btn--block" id="emailBtn" type="submit"><span>Send my code</span></button>
+        <p class="step__fine">One email, no spam. Used to verify you and for Blossom Rally updates.</p>
+      </form>
+
+      <!-- step otp -->
+      <form class="step" id="stepOtp" hidden novalidate>
+        <p class="step__k">Racer license · step 2 of 2</p>
+        <h3 class="step__t">Enter your code</h3>
+        <p class="step__d">Sent to <b id="otpEmail"></b>. <button type="button" class="link" id="otpChange">Change</button></p>
+        <div class="otp" id="otp"></div>
+        <p class="step__err" id="otpErr" role="alert"></p>
+        <button class="btn btn--red btn--block" id="otpBtn" type="submit"><span>Verify &amp; download</span></button>
+        <p class="step__fine"><button type="button" class="link" id="otpResend" disabled>Resend code</button> <span id="otpTimer"></span></p>
+      </form>
+
+      <!-- step done -->
+      <div class="step step--done" id="stepDone" hidden>
+        <div class="flag" aria-hidden="true"></div>
+        <p class="step__k">Checkered flag</p>
+        <h3 class="step__t">You're on the grid!</h3>
+        <p class="step__d" id="doneMsg">Your download is starting…</p>
+        <button class="btn btn--red btn--block" id="doneRetry">Download again</button>
+        <button class="btn btn--ghost-dark btn--block" id="doneOther">Get the other platform</button>
+        <p class="step__fine">New build every Thursday — come back with the same email.</p>
+      </div>
+    </div>
+    <button class="launch__skip" id="launchSkip">Skip intro ›</button>
+  </div>
+
+  <!-- ============ SVG SYMBOLS ============ -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="sakura" viewBox="0 0 40 40">
+      <g transform="translate(20 20)">
+        <g id="petal"><path d="M0 -3 C -5 -8 -6 -15 -2 -18 L 0 -15.5 L 2 -18 C 6 -15 5 -8 0 -3Z" /></g>
+        <use href="#petal" transform="rotate(72)" /><use href="#petal" transform="rotate(144)" />
+        <use href="#petal" transform="rotate(216)" /><use href="#petal" transform="rotate(288)" />
+        <circle r="2.6" />
+      </g>
+    </symbol>
+    <symbol id="carTop" viewBox="-40 -24 80 48">
+      <rect x="-30" y="-17" width="10" height="6" rx="2" fill="#1b1416" />
+      <rect x="-30" y="11" width="10" height="6" rx="2" fill="#1b1416" />
+      <rect x="16" y="-17" width="10" height="6" rx="2" fill="#1b1416" />
+      <rect x="16" y="11" width="10" height="6" rx="2" fill="#1b1416" />
+      <rect x="-34" y="-14" width="68" height="28" rx="8" fill="#fbf8f2" stroke="#1b1416" stroke-width="2" />
+      <rect x="-37" y="-15" width="6" height="30" rx="2" fill="#fbf8f2" stroke="#1b1416" stroke-width="2" />
+      <rect x="-34" y="-4" width="68" height="3.4" fill="#2f7f8f" />
+      <rect x="-34" y="-0.4" width="68" height="3.4" fill="#f0892b" />
+      <rect x="-8" y="-11" width="20" height="22" rx="4" fill="#2b2326" />
+      <circle cx="-18" cy="0" r="6.5" fill="#fbf8f2" stroke="#1b1416" stroke-width="1.5" />
+      <text x="-18" y="2.6" text-anchor="middle" font-size="7.5" font-weight="900" fill="#1b1416" font-family="Archivo, sans-serif">27</text>
+      <rect x="28" y="-12" width="5" height="5" rx="1.5" fill="#fff2b8" />
+      <rect x="28" y="7" width="5" height="5" rx="1.5" fill="#fff2b8" />
+    </symbol>
+  </svg>
+
+  <script src="/js/vendor/supabase.js" defer></script>
+  <script src="/js/config.js" defer></script>
+  <script src="/js/audio.js" defer></script>
+  <script src="/js/main.js" defer></script>
+  <script src="/js/drift-lot.js" defer></script>
+  <script src="/js/download.js" defer></script>
+</body>
+</html>

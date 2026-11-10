@@ -1,0 +1,103 @@
+name: Sync game builds
+
+# Copies the macOS + Windows testing builds from Google Drive into this repo's
+# GitHub Release "latest-build", so the website downloads them straight from GitHub.
+#
+# Runs every Thursday (update day) and on demand from the Actions tab.
+# To ship a new build: replace the file in Google Drive (File → Manage versions keeps the
+# same link) — or run this workflow manually with new Drive file IDs.
+
+on:
+  workflow_dispatch:
+    inputs:
+      mac_drive_id:
+        description: "Google Drive file ID for the macOS build (blank = default)"
+        required: false
+      windows_drive_id:
+        description: "Google Drive file ID for the Windows build (blank = default)"
+        required: false
+  schedule:
+    - cron: "17 9 * * 4" # Thursdays 09:17 UTC
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-builds
+  cancel-in-progress: false
+
+env:
+  TAG: latest-build
+  DEFAULT_MAC_ID: 1jfVj8qJJg_n0DaQ84z5pdHnMBJUSoalb
+  DEFAULT_WIN_ID: 12nEeEYGelp-GzJ0LW0gQjBHlh-cNbvu5
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Install tools
+        run: pipx install gdown
+
+      - name: Download builds from Google Drive
+        env:
+          MAC_ID: ${{ inputs.mac_drive_id || vars.MAC_DRIVE_ID || env.DEFAULT_MAC_ID }}
+          WIN_ID: ${{ inputs.windows_drive_id || vars.WINDOWS_DRIVE_ID || env.DEFAULT_WIN_ID }}
+        run: |
+          set -euo pipefail
+          fetch () {
+            local id="$1" dir="dl/$2"
+            mkdir -p "$dir"
+            echo "::group::Downloading $2 ($id)"
+            # 1) direct large-file endpoint (skips the virus-scan interstitial)
+            ( cd "$dir" && curl -fSL --retry 4 --retry-delay 5 -J -O \
+                "https://drive.usercontent.google.com/download?id=${id}&export=download&confirm=t" ) || true
+            local f; f="$(ls -1 "$dir" | head -n1 || true)"
+            if [ -z "$f" ] || file --mime-type -b "$dir/$f" | grep -qi html; then
+              echo "Direct download failed, falling back to gdown"
+              rm -rf "$dir"/*
+              gdown --fuzzy "https://drive.google.com/file/d/${id}/view" -O "$dir/"
+            fi
+            ls -la "$dir"
+            echo "::endgroup::"
+          }
+          fetch "$MAC_ID" mac
+          fetch "$WIN_ID" windows
+
+      - name: Package as stable file names
+        run: |
+          set -euo pipefail
+          mkdir -p out
+          pack () {
+            local src="dl/$1" out="out/$2"
+            local f; f="$(ls -1 "$src" | head -n1)"
+            if [ -z "$f" ]; then echo "::error::No file downloaded for $1"; exit 1; fi
+            if file --mime-type -b "$src/$f" | grep -qi html; then echo "::error::Google returned an HTML page for $1 — check the file is shared as 'Anyone with the link'"; exit 1; fi
+            if [[ "${f,,}" == *.zip ]]; then
+              cp "$src/$f" "$out"
+            else
+              ( cd "$src" && zip -qry "../../$out" "$f" )
+            fi
+            unzip -tq "$out"
+            echo "$1 → $out ($(du -h "$out" | cut -f1)) from '$f'"
+          }
+          pack mac BlossomRally-macOS.zip
+          pack windows BlossomRally-Windows.zip
+          ( cd out && sha256sum *.zip > SHA256SUMS.txt && cat SHA256SUMS.txt )
+
+      - name: Publish to GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          NOTES="Latest Blossom Rally testing build for macOS and Windows.
+          Synced from Google Drive on $(date -u '+%Y-%m-%d %H:%M UTC'). New build every Thursday.
+          Download from the website — https://blossomrally.netlify.app"
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" --title "Blossom Rally — latest testing build" --notes "$NOTES" --latest
+          else
+            gh release edit "$TAG" --notes "$NOTES"
+          fi
+          gh release upload "$TAG" out/BlossomRally-macOS.zip out/BlossomRally-Windows.zip out/SHA256SUMS.txt --clobber
+          gh release view "$TAG"

@@ -1,0 +1,16 @@
+<!-- Supabase → Authentication → Email Templates → "Magic Link"
+     Subject: Your Blossom Rally code: {{ .Token }}
+     The {{ .Token }} placeholder is what makes Supabase send a 6-digit code. -->
+<div style="margin:0;padding:32px 16px;background:#f6eee6;font-family:Arial,Helvetica,sans-serif;color:#1b1416">
+  <div style="max-width:440px;margin:0 auto;background:#fbf8f2;border-radius:20px;overflow:hidden;border:3px solid #1b1416">
+    <div style="height:8px;background:linear-gradient(90deg,#2f7f8f 0 33%,#f0892b 33% 66%,#d42a3c 66%)"></div>
+    <div style="padding:28px 28px 8px">
+      <p style="margin:0 0 6px;font-size:12px;letter-spacing:3px;font-weight:bold;color:#d9416e">BLOSSOM RALLY · 桜ラリー</p>
+      <h1 style="margin:0 0 12px;font-size:26px;line-height:1.1">Your racer code</h1>
+      <p style="margin:0 0 20px;font-size:15px;color:#3a2e31">Enter this code on the download page to get on the grid.</p>
+      <div style="font-size:38px;letter-spacing:12px;font-weight:bold;text-align:center;background:#1b1416;color:#fbf8f2;border-radius:14px;padding:18px 0">{{ .Token }}</div>
+      <p style="margin:20px 0 0;font-size:13px;color:#6d5d61">Didn't ask for this? You can ignore this email.</p>
+    </div>
+    <div style="padding:18px 28px 26px;font-size:13px;color:#6d5d61">New build every Thursday 🌸</div>
+  </div>
+</div>
